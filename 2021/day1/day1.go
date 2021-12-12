@@ -34,15 +34,16 @@ func readFile(fname string) (nums []int, err error) {
 }
 
 
-type convert2arr func(int, int) int
-type convert func(int) int
+type convert2 func(int, int) int
+func diff2(a int, b int) int { return a - b }
 
-func diff2arr(a int, b int) int { return a - b }
+type convert func(int) int
 func count_pos(a int) int { if a > 0 {return 1 } else {return 0}}
 func sum(a int, b int) int { return a + b }
 
 
-func apply2arr(arr1 []int, arr2 []int, fn convert2arr) []int {
+func apply2(arr1 []int, arr2 []int, fn convert2) []int {
+    // Apply a function over each element in both arr1 and arr2.
 
     var out []int
 
@@ -58,6 +59,7 @@ func apply2arr(arr1 []int, arr2 []int, fn convert2arr) []int {
 
 
 func apply(arr1 []int, fn convert) []int {
+    // Apply a function over a single array.
 
     var out []int
 
@@ -72,9 +74,9 @@ func apply(arr1 []int, fn convert) []int {
 }
 
 
-func reduce(arr []int, fn convert2arr) int {
+func reduce(arr []int, fn convert2) int {
 
-    var out int = 0
+    var out int = arr[0]
 
     n := len(arr)
 
@@ -88,19 +90,33 @@ func reduce(arr []int, fn convert2arr) int {
 }
 
 
+func readFile(fname string) (nums []int, err error) {
+    b, err := ioutil.ReadFile(fname)
+    if err != nil { return nil, err }
+
+    lines := strings.Split(string(b), "\n")
+    return  lines
+}
+
+
 func main() {
     // read file
-    ints, _ := readFile("day1.sample")
+    // arr, _ := readFile("day1.sample")
+    arr, _ := readFile("day1.input")
 
-    n := len(ints)
-    win := 1
+    // params
+    n := len(arr)
+    win := 3
 
     // get increments
-    increments := apply2arr(ints[win:n], ints[0:n-win], diff2arr)
+    increments := apply2(arr[win:n], arr[0:n-win], diff2)
 
     // count positives
     positives := apply(increments, count_pos)
     count := reduce(positives, sum)
-    // wrong
-    fmt.Println(count)
+
+    // fmt.Println("increments:", increments)
+    // fmt.Println("positives:", positives)
+    fmt.Println("count:", count)
+
 }
