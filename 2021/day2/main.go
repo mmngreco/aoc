@@ -71,25 +71,27 @@ func readFile(fname string) (nums []string, err error) {
 type Ship struct {
     horizontal int
     depth int
+    aim int
 }
 
 
 func (s *Ship) move(movement string) {
     // split and convert movement string into int.
 
-    splitted := strings.Fields(movement)
-    sdir := splitted[0]
-    smod := splitted[1]
-    mod, _ := strconv.Atoi(smod)
+    order_split := strings.Fields(movement)
+    dir_str := order_split[0]
+    mod_str := order_split[1]
+    x, _ := strconv.Atoi(mod_str)
 
-    switch sdir {
+    switch dir_str {
 
     case "forward":
-        s.move_horizontal(mod)
+        s.move_horizontal(x)
+        s.move_depth(s.aim * x)
     case "down":
-        s.move_depth(mod)
+        s.move_aim(x)
     case "up":
-        s.move_depth(-mod)
+        s.move_aim(-x)
     }
 
 }
@@ -97,6 +99,11 @@ func (s *Ship) move(movement string) {
 func (s *Ship) move_horizontal(x int) {
     // Move over horizontal
     (*s).horizontal += x
+}
+
+func (s *Ship) move_aim(x int) {
+    // Move over horizontal
+    (*s).aim += x
 }
 
 func (s *Ship) move_depth(x int) {
@@ -112,6 +119,7 @@ func (s *Ship) multiply() int {
 func main() {
 
     ship := Ship{}
+    // order_list, _ := readFile("sample") // multiply = 900
     order_list, _ := readFile("input")
 
     for idx, order := range order_list {
