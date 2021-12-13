@@ -90,15 +90,6 @@ func reduce(arr []int, fn convert2) int {
 }
 
 
-func readFile(fname string) (nums []int, err error) {
-    b, err := ioutil.ReadFile(fname)
-    if err != nil { return nil, err }
-
-    lines := strings.Split(string(b), "\n")
-    return  lines
-}
-
-
 func main() {
     // read file
     // arr, _ := readFile("day1.sample")
