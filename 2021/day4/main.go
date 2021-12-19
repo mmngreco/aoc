@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -18,6 +19,8 @@ type Board struct {
     done bool
     iters int
     last string
+    win_index []int
+    win_values []string
 }
 
 // Set raw and list
@@ -39,7 +42,6 @@ func (self *Board) mark_number(number string) bool {
 
         if number == elem {
 
-            list[ielem] = "X"
             self.append_row(ielem)
             self.append_col(ielem)
             self.last = elem
@@ -70,6 +72,7 @@ func (self *Board) append_row(index int) bool {
 
     if len(self.rows[i]) == self.dim {
         self.done = true
+        self.win_index = self.rows[i]
     }
     return self.done
 
@@ -90,16 +93,26 @@ func (self *Board) append_col(index int) bool {
     self.cols[j] = append(self.cols[j], index)
     if len(self.cols[j]) == self.dim {
         self.done = true
+        self.win_index = self.cols[j]
     }
     return self.done
 }
 
+func (self *Board) get_value() int {
+    var out int
+    for _, v := range self.win_index {
+
+        num, _:= strconv.Atoi(self.row_list[v])
+        out += num
+    }
+    mul, _ := strconv.Atoi(self.last)
+    out = out * mul
+    return out
+}
+
+
 // Clean board
 func (self *Board) clean_raw(board string) []string {
-    // drop trailing spaces an new lines
-    board = strings.Trim(board, "\n")
-    board = strings.Trim(board, " ")
-
     // join the matrix in one row
     board = strings.ReplaceAll(board, "\n", " ")
 
@@ -107,6 +120,7 @@ func (self *Board) clean_raw(board string) []string {
     for strings.Contains(board, "  ") {
         board = strings.ReplaceAll(board, "  ", " ")
     }
+    board = strings.Trim(board, " ")
 
     // split it all elements
     board_list := strings.Split(board, " ")
@@ -120,7 +134,7 @@ func (self *Board) init(size int) {
     self.iters = 0
 
     var i int = 0
-    for i<size {
+    for i < size {
         i++
         self.cols = make([][]int, size)
         self.rows = make([][]int, size)
@@ -132,7 +146,7 @@ type Game struct {
 
     best int
     numbers []string
-    board_list []Board
+    board_list []*Board
 
 }
 
@@ -159,18 +173,18 @@ func (self *Game) build(file string) {
         // build a board
         board := Board{}
         board.set_board(board_str, 5)
-        self.board_list = append(self.board_list, board)
+        self.board_list = append(self.board_list, &board)
     }
 }
 
 
 func (self *Game) check() int {
 
-    numbers := self.numbers
     board_list := self.board_list
-    var best int
-
-    best = len(numbers)
+    numbers := self.numbers
+    best_iter := len(numbers)
+    best_value := 0
+    best_index := len(board_list)
 
     for ib, board := range board_list {
         i := 0
@@ -178,15 +192,15 @@ func (self *Game) check() int {
             board.mark_number(numbers[i])
             i++
         }
-
-        if board.done && best > board.iters {
-            best = ib
+        if v:=board.get_value(); best_value < v {
+            best_index = ib
+            best_value = v
         }
 
     }
+    fmt.Println("last", best_index, best_value)
 
-    fmt.Println("end", best, board_list[best].iters)
-    return best
+    return best_iter
 }
 
 
@@ -202,9 +216,8 @@ func readFile() string {
 
 func main() {
 
-    file := readFile()
     game := Game{}
-    game.build(file)
+    game.build(readFile())
     game.check()
 
 }
