@@ -136,13 +136,11 @@ func (g *Grid) markSegment(segment string) {
 
         for (xi != x2) && (yi != y2) {
             // fmt.Print("|", xi, yi)
-
             (*g).grid[yi][xi] += 1
-
             xi += xd
             yi += yd
         }
-
+        (*g).grid[yi][xi] += 1
     }
 
     // fmt.Print("\n")
@@ -150,7 +148,7 @@ func (g *Grid) markSegment(segment string) {
 }
 
 
-func is45(x1 int, x2 int, y1 int, y2 int) bool {
+func is45(x1, x2, y1, y2 int) bool {
     xd := x1 - x2
     yd := y1 - y2
     if xd < 0 {xd *= -1}
@@ -160,6 +158,7 @@ func is45(x1 int, x2 int, y1 int, y2 int) bool {
 
 func (g *Grid) Count() int {
     var out int
+
     grid := (*g).grid
     for i := 0; i < len(grid); i++ {
         for j := 0; j < len(grid[0]); j++ {
@@ -270,6 +269,6 @@ func main() {
     grid.init(file)
     // grid.Print()
     grid.markAll(file)
-    grid.Print()
+    // grid.Print()
     grid.Count()
 }
