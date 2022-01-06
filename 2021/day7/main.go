@@ -6,62 +6,93 @@ import (
 	"os"
 	"strconv"
 	"strings"
+    "math"
 )
 
 
-func Avg(arr []int) (out int) {
-    out = Sum(arr) / len(arr)
+func highestLowest(arr []int) (hi,lo int) {
+    hi = math.MaxInt32
+    lo = 0
+
+    for i, v := range arr {
+
+        if hi < v  || i == 0 {
+            hi = v
+        }
+
+        if lo > v || i == 0 {
+            lo = v
+        }
+    }
+
+    return hi, lo
+}
+
+
+func avg(arr []int) (out int) {
+    out = sum(arr) / len(arr)
     return out
 }
 
 
-func Sum(arr []int) (out int) {
+func sum(arr []int) (out int) {
+
     for _, v := range arr {
         out += v
     }
+
     return out
 }
 
 
 
 func readFile() (out []int){
+
     file := os.Args[1]
     b, _ := ioutil.ReadFile(file)
     input := strings.Trim(string(b), "\n")
+
     for _, v := range strings.Split(input, ",") {
         vint, _ := strconv.Atoi(v)
         out = append(out, vint)
-
     }
+
     return out
 }
 
 
-func Solve(arr []int) (best int){
-    fmt.Println(best)
-    var fuel int
-    for i, k := range arr {
-        fuel = 0
-        for _, xi := range arr {
-            if xi > k {
-                fuel += xi - k
-            } else {
-                fuel += k - xi
-            }
-        }
-        if fuel < best || i == 0 {
-            best = fuel
+func distance(arr []int, pos int) (dist int){
+    for _, crab_i := range arr {
+        dist += int(math.Abs(float64(crab_i) - float64(pos)))
         }
     }
+    return dist
+}
+
+
+
+func solve(arr []int) (best int){
+    var fuelConsumption int
+
+    best = math.MaxInt32
+    highest, lowest := highestLowest(arr)
+    fmt.Println(lowest, highest)
+
+    for pos := lowest; pos <= highest; pos++ {
+        fuelConsumption = distance(arr, pos)
+        if fuelConsumption < best {
+            best = fuelConsumption
+        }
+    }
+
     return best
 }
 
 
 func main() {
     input := readFile()
-    fmt.Println(input)
-    fmt.Println("Sum:", Sum(input))
-    fmt.Println("Avg:", Avg(input))
-    fmt.Println("Solve:", Solve(input))
+    fmt.Println("Sum:", sum(input))
+    fmt.Println("Avg:", avg(input))
+    fmt.Println("Solve:", solve(input))
 }
 
