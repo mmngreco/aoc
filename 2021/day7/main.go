@@ -118,9 +118,13 @@ func readFile() (out []int){
 func distance(arr []int, pos int) (dist int){
     for _, crab_i := range arr {
         dist_i := int(math.Abs(float64(crab_i) - float64(pos)))
-        for i := 1; i <= dist_i; i++ {
-            dist += i
-        }
+        // gauss trick
+        //  1 ... 100 = 101
+        //  2 ...  99 = 101
+        //    ...
+        // 49 ...  52 = 101
+        // 50 ...  51 = 101
+        dist += dist_i * (dist_i + 1) / 2
     }
     return dist
 }
