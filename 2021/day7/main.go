@@ -63,7 +63,9 @@ func readFile() (out []int){
 
 func distance(arr []int, pos int) (dist int){
     for _, crab_i := range arr {
-        dist += int(math.Abs(float64(crab_i) - float64(pos)))
+        dist_i := int(math.Abs(float64(crab_i) - float64(pos)))
+        for i := 1; i <= dist_i; i++ {
+            dist += i
         }
     }
     return dist
