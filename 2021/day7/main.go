@@ -136,7 +136,6 @@ func solve(arr []int) (best int){
 
     best = math.MaxInt32
     highest, lowest := highestLowest(arr)
-    fmt.Println(lowest, highest)
 
     for pos := lowest; pos <= highest; pos++ {
         fuelConsumption = distance(arr, pos)
