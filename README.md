@@ -11,3 +11,5 @@ https://adventofcode.com/2021
     - [day 4](./2021/day4/)
     - [day 5](./2021/day5/)
     - [day 6](./2021/day6/)
+    - [day 7](./2021/day7/)
+    - [day 8](./2021/day8/)
