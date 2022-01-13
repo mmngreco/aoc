@@ -43,6 +43,7 @@ Binary matrix
 number  binary            len   string
 ------  --------------    ---   --------
         1 2 3 4 5 6 7     j
+        g f e d c b a
 i       a b c d e f g     n
 
 1       0 0 1 0 0 1 0     2     cf       Know it
@@ -62,11 +63,11 @@ If we select only numbers with len of 5, we can find the following rules:
 
 number  binary            len   string
 ------  --------------    ---   --------
-2       1 0 1 1 1 0 1     5     acdeg
+2 ??    1 0 1 1 1 0 1     5     acdeg
 4       0 1 1 1 0 1 0     4     bcdf
 2 | 4 = 1 1 1 1 1 1 1 => all segments active
 
-3       1 0 1 1 0 1 1     5     acdfg
+3 ??    1 0 1 1 0 1 1     5     acdfg
 1       0 0 1 0 0 1 0     2     cf
 3 | 1 = 1 0 1 1 0 1 1 => equal to 3 (doesn't change)
 
@@ -98,8 +99,8 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+    "math"
 	"os"
-	"strconv"
 	"strings"
 )
 
@@ -202,18 +203,16 @@ func make_digit(s string, num int) Digit {
 }
 
 
-func dencrypt(s []string, str2int map[byte]int) (out int) {
+func dencrypt(s []string, dencrypter map[byte]int) (num int) {
     // Dencrypt a number using a map.
-    var num string = ""
-    var bin byte
+    var pos int
 
-    for _, v := range s {
-        bin = str2bin(v)
-        num += strconv.Itoa(str2int[bin])
+    for i, v := range s {
+        pos = int(math.Pow(float64(10), float64(3 - i)))
+        num += dencrypter[str2bin(v)] * pos
     }
-    out, _ = strconv.Atoi(num)
 
-    return out
+    return num
 }
 
 
@@ -245,6 +244,7 @@ func make_dencrypter(s []string) (map[byte]int) {
     for _, v := range digitUnknown {
 
         if v.Len == 5 {
+            // Group of lenght of 5
             if (v.Bin | four.Bin) == byte(all_active) {
                 bin2int[v.Bin] = 2
             } else if (v.Bin | one.Bin) == byte(v.Bin) {
@@ -253,6 +253,7 @@ func make_dencrypter(s []string) (map[byte]int) {
                 bin2int[v.Bin] = 5
             }
         } else {
+            // Group of lenght of 6
             if (v.Bin | one.Bin) == byte(all_active) {
                 bin2int[v.Bin] = 6
             } else if (v.Bin | four.Bin) == byte(all_active) {
@@ -277,18 +278,18 @@ func solve_it() {
 
     var out, number int
     var ten_numbers, four_numbers []string
-    var dencrypter map[byte]int
+    var dencrypter_map map[byte]int
 
     for _, line := range lines {
         left_right := strings.Split(line, " | ")
 
         ten_numbers = strings.Split(left_right[0], " ")
-        dencrypter = make_dencrypter(ten_numbers)
+        dencrypter_map = make_dencrypter(ten_numbers)
         // fmt.Println(dencrypter)
 
         four_numbers = strings.Split(left_right[1], " ")
-        number = dencrypt(four_numbers, dencrypter)
-        // fmt.Printf("%s\t%s\t%d\n", ten_numbers[:], four_numbers[:], numbers)
+        number = dencrypt(four_numbers, dencrypter_map)
+        // fmt.Printf("%s\t%s\t%d\n", ten_numbers[:], four_numbers[:], number)
         out += number
     }
 
