@@ -1,6 +1,6 @@
 # Advent of Code
 
-An excuse to learn Golang which is cool programming language.
+An excuse to learn Golang!
 
 https://adventofcode.com/2021
 
