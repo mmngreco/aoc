@@ -72,37 +72,38 @@ func readFile() {
 
     max_row_i := nrows - 1
     max_col_i := ncols - 1
+
     // find low points
     for row_i, row_v := range matrix {
-
-        down_available = row_i > 0
-        up_available = row_i < max_row_i
-        left_available = false
-        right_available = true
 
         for col_i, col_v := range row_v {
 
             // early stop
             if (col_v == 9){ continue }
 
+            // repeat calculations but it's readable
+            up_available = 0 < row_i
+            down_available = row_i < max_row_i
+            left_available = 0 < col_i
+            right_available = col_i < max_col_i
+
             is_low_point = true
-            right_available = (col_i < max_col_i)
 
             if left_available {
-                // left
+                // left greater than value
                 is_low_point = is_low_point && (matrix[row_i][col_i-1] > col_v)
             }
             if down_available {
-                // down
-                is_low_point = is_low_point && (matrix[row_i-1][col_i] > col_v)
+                // down greater than value
+                is_low_point = is_low_point && (matrix[row_i+1][col_i] > col_v)
             }
             if right_available {
-                // right
+                // right greater than value
                 is_low_point = is_low_point && (matrix[row_i][col_i+1] > col_v)
             }
             if up_available {
-                // up
-                is_low_point = is_low_point && (matrix[row_i+1][col_i] > col_v)
+                // up greater than value
+                is_low_point = is_low_point && (matrix[row_i-1][col_i] > col_v)
             }
 
             if is_low_point {
@@ -110,11 +111,51 @@ func readFile() {
                 risk += 1 + col_v
             }
 
-            left_available = true
 
         }
     }
     fmt.Println(risk)
+
+}
+
+
+func checkAdjacent (row_i int, col_i int, matrix [][]int, counter *int) {
+    // early stop
+    col_v := matrix[row_i][col_i]
+
+    if (col_v == 9){ return }
+
+    (*counter)++
+
+    nrows := len(matrix)
+    ncols := len(matrix[0])
+    max_row_i := nrows - 1
+    max_col_i := ncols - 1
+
+    up_available := 0 < row_i
+    down_available := row_i < max_row_i
+    left_available := 0 < col_i
+    right_available := col_i < max_col_i
+    // TODO I need store visited coordinates
+
+    if left_available {
+        // left greater than value
+        checkAdjacent(row_i, col_i-1, matrix, counter)
+    }
+    if down_available {
+        // down greater than value
+        checkAdjacent(row_i+1, col_i, matrix, counter)
+    }
+    if right_available {
+        // right greater than value
+        checkAdjacent(row_i, col_i+1, matrix, counter)
+    }
+    if up_available {
+        // up greater than value
+        checkAdjacent(row_i-1, col_i, matrix, counter)
+    }
+
+    return
 
 }
 
