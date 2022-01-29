@@ -30,196 +30,209 @@ adjacent location, and so are not low points.
 The risk level of a low point is 1 plus its height. In the above example, the
 risk levels of the low points are 2, 1, 6, and 6. The sum of the risk levels of
 all low points in the heightmap is therefore 15.
+
+
+Part 2
+------
+
+Next, you need to find the largest basins so you know what areas are most
+important to avoid.
+
+A basin is all locations that eventually flow downward to a single low point.
+Therefore, every low point has a basin, although some basins are very small.
+Locations of height 9 do not count as being in any basin, and all other
+locations will always be part of exactly one basin.
+
+The size of a basin is the number of locations within the basin, including the
+low point. The example above has four basins.
+
+The top-left basin, size 3:
+
+2199943210
+3987894921
+9856789892
+8767896789
+9899965678
+The top-right basin, size 9:
+
+2199943210
+3987894921
+9856789892
+8767896789
+9899965678
+The middle basin, size 14:
+
+2199943210
+3987894921
+9856789892
+8767896789
+9899965678
+The bottom-right basin, size 9:
+
+2199943210
+3987894921
+9856789892
+8767896789
+9899965678
+
+Find the three largest basins and multiply their sizes together. In the above
+example, this is 9 * 14 * 9 = 1134.
+
+
 */
 package main
 
 import (
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"os"
 	"strconv"
 	"strings"
 )
 
-
-const X = 9
+const visited = 9
 
 var (
-    origin = [2]int{0, 0}
-    up = [2]int{-1, 0}
-    down = [2]int{1, 0}
-    left = [2]int{0, -1}
-    right = [2]int{0, 1}
+    //    0 1 2
+    //
+    // 0  1 2 3
+    // 1  1 # 3
+    // 2  1 2 3
+	origin = [2]int{0, 0}
+	up     = [2]int{-1, 0}
+	down   = [2]int{1, 0}
+	left   = [2]int{0, -1}
+	right  = [2]int{0, 1}
 )
 
-
-func is_inside(data [][]int, row_i int, col_i int) (bool) {
-    nrows := len(data)
-    ncols := len(data[0])
-    return ((row_i >= 0) && (row_i < nrows)) && ((col_i >= 0) && (col_i < ncols))
+func is_inside(data [][]int, row_i int, col_i int) bool {
+	nrows := len(data)
+	ncols := len(data[0])
+	return (row_i >= 0) && (row_i < nrows) && (col_i >= 0) && (col_i < ncols)
 }
 
-
-func is_basin(data [][]int, row_i int, col_i int) (bool) {
-    return is_inside(data, row_i, col_i) && data[row_i][col_i] < X
+func is_basin(data [][]int, row_i int, col_i int) bool {
+	return is_inside(data, row_i, col_i) && (data[row_i][col_i] < visited)
 }
 
+func basinFinder(data [][]int, row_i int, col_i int, motion [2]int) (out int) {
 
-func finder(data [][]int, row_i int, col_i int, motion [2]int, counter *int) int {
+	row_i += motion[0]
+	col_i += motion[1]
 
-    // debug(data)
-    // fmt.Printf("row\tcol\n")
-    // fmt.Printf("%d+%d\t", row_i, motion[0])
-    // fmt.Printf("%d+%d\n", col_i, motion[1])
-    row_i = row_i + motion[0]
-    col_i = col_i + motion[1]
-    // fmt.Println(is_basin(data, row_i, col_i))
+	if !is_basin(data, row_i, col_i) {
+		return 0
+	}
 
-    if !is_basin(data, row_i, col_i) {
-        return 0
-    }
+	data[row_i][col_i] = visited
 
-    *counter++
-    data[row_i][col_i] = X  // visited
+	out = 1
+    out += basinFinder(data, row_i, col_i, up)
+	out += basinFinder(data, row_i, col_i, down)
+	out += basinFinder(data, row_i, col_i, left)
+	out += basinFinder(data, row_i, col_i, right)
 
-    finder(data, row_i, col_i, up, counter)
-    finder(data, row_i, col_i, down, counter)
-    finder(data, row_i, col_i, left, counter)
-    finder(data, row_i, col_i, right, counter)
-
-    return 1
+	return out
 }
 
-
-func debug(data [][]int){
-    for _, r := range data {
-        fmt.Println(r)
-    }
+func printMatrix(data [][]int) {
+	for _, r := range data {
+		fmt.Println(r)
+	}
 }
+
 
 func make_matrix(nrows int, ncols int) [][]int {
-    matrix := make([][]int, nrows)
-    for i := range matrix {
-        matrix[i] = make([]int, ncols)
-    }
-    return matrix
+	matrix := make([][]int, nrows)
+	for i := range matrix {
+		matrix[i] = make([]int, ncols)
+	}
+	return matrix
 }
 
 
-func fill_matrix(lines []string, matrix [][]int) [][]int {
-    for row_i, row_v := range lines {
-        for col_i, col_v := range row_v {
-            v, _ := strconv.Atoi(string(col_v))
-            matrix[row_i][col_i] = int(v)
-        }
-    }
-    return matrix
-}
+func lines2matrix(lines []string) [][]int {
 
+	nrows := len(lines)
+	ncols := len(lines[0])
 
-func copy_matrix(matrix [][]int ) [][]int {
-    duplicate := make_matrix(len(matrix), len(matrix[0]))
-    for i := range matrix {
-        duplicate[i] = make([]int, len(matrix[i]))
-        copy(duplicate[i], matrix[i])
-    }
-    return duplicate
-}
-
-func is_lowest(matrix [][]int, col_v int, row_i int, col_i int, max_row_i int, max_col_i int) bool {
-
-    if (col_v == 9) {
-        return false
-    }
-
-    var is_low_point bool
-    var left_available, right_available, down_available, up_available bool
-    // repeat calculations but it's readable
-    up_available = 0 < row_i
-    down_available = row_i < max_row_i
-    left_available = 0 < col_i
-    right_available = col_i < max_col_i
-
-    is_low_point = true
-
-    if left_available {
-        // left greater than value
-        is_low_point = is_low_point && (matrix[row_i][col_i-1] > col_v)
-    }
-    if down_available {
-        // down greater than value
-        is_low_point = is_low_point && (matrix[row_i+1][col_i] > col_v)
-    }
-    if right_available {
-        // right greater than value
-        is_low_point = is_low_point && (matrix[row_i][col_i+1] > col_v)
-    }
-    if up_available {
-        // up greater than value
-        is_low_point = is_low_point && (matrix[row_i-1][col_i] > col_v)
-    }
-    return is_low_point
-}
-
-
-func save_largest(largest *[3]int, value int) {
-    // FIXME fill all before overwrite a number
-    switch {
-        case (*largest)[2] < value:
-            (*largest)[2] = value
-            fmt.Println(2, *largest)
-        case (*largest)[1] < value:
-            (*largest)[1] = value
-            fmt.Println(1, *largest)
-        case (*largest)[0] < value:
-            (*largest)[0] = value
-            fmt.Println(0, *largest)
-    }
-}
-
-
-func readFile() {
-    // read file
-    filename := os.Args[1]
-    b, _ := ioutil.ReadFile(filename)
-    str := strings.Trim(string(b), "\n")
-    lines := strings.Split(str, "\n")
-
-    nrows := len(lines)
-    ncols := len(lines[0])
-
-    // Create an empty matrix
-    matrix := make_matrix(nrows, ncols)
+	// Create an empty matrix
+	matrix := make_matrix(nrows, ncols)
 
     // convert to int
-    fill_matrix(lines, matrix)
+	for row_i, row_v := range lines {
+		for col_i, col_v := range row_v {
+			v, _ := strconv.Atoi(string(col_v))
+			matrix[row_i][col_i] = int(v)
+		}
+	}
+	return matrix
+}
 
-    var is_low_point bool
-    var risk int
-    var largest [3]int
 
-    max_row_i := nrows - 1
-    max_col_i := ncols - 1
+func quicksort_rev(arr []int) (out []int) {
+    n := len(arr)
 
-    // find low points
-    for row_i, row_v := range matrix {
-        for col_i, col_v := range row_v {
-            is_low_point = is_lowest(matrix, col_v, row_i, col_i, max_row_i, max_col_i)
-            if is_low_point {
-                // calculate risk
-                counter := 0
-                data := copy_matrix(matrix)
-                finder(data, row_i, col_i, origin, &counter)
-                save_largest(&largest, counter)
-                risk += 1 + col_v
-            }
-        }
+    if n < 2 {
+        // early stop
+        return arr
     }
-    fmt.Println(risk, largest)
 
+    idx := rand.Intn(n)
+    pivot := arr[idx]
+
+    var (
+        left []int
+        right []int
+        equal []int
+    )
+
+
+    for _, v := range arr {
+        if v < pivot { left = append(left, v) }
+        if v > pivot { right = append(right, v) }
+        if v == pivot { equal = append(equal, v) }
+    }
+
+    out = append(out, quicksort_rev(right)...)
+    out = append(out, equal...)
+    out = append(out, quicksort_rev(left)...)
+
+    return out
+
+}
+
+
+func readFile() (matrix [][]int) {
+	// read file and return a Matrix
+	filename := os.Args[1]
+	b, _ := ioutil.ReadFile(filename)
+	str := strings.Trim(string(b), "\n")
+	lines := strings.Split(str, "\n")
+    matrix = lines2matrix(lines)
+    return matrix
 }
 
 
 func main() {
-    readFile()
+    matrix := readFile()
+
+    var basinList []int
+
+	// find low points
+	for row_i, row_v := range matrix {
+		for col_i := range row_v {
+            counter := basinFinder(matrix, row_i, col_i, origin)
+            if counter > 0 {
+                basinList = append(basinList, counter)
+            }
+		}
+	}
+
+    // solution
+    sorted := quicksort_rev(basinList)
+    fmt.Println("3-largest basin:", sorted[0:3])
+    fmt.Println("Solution:", sorted[0] * sorted[1] * sorted[2])
+
 }
