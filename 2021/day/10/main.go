@@ -1,10 +1,11 @@
 package main
 
 import (
+	"container/list"
 	"fmt"
 	"os"
+	"sort"
 	"strings"
-    "container/list"
 )
 
 
@@ -96,10 +97,10 @@ func get_closing(o string) string {
 
 func char2point(c string) int {
     switch c {
-        case ")": return 3
-        case "]": return 57
-        case "}": return 1197
-        case ">": return 25137
+        case ")": return 1
+        case "]": return 2
+        case "}": return 3
+        case ">": return 4
         default: return 0
     }
 }
@@ -125,18 +126,33 @@ func parse(line string) int {
             continue
         }
 
-        return char2point(char)
+        return 0
     }
-    return 0
+
+    total := 0
+    for !openings.Empty() {
+        total *= 5
+        op, _ := openings.Front()
+        total += char2point(get_closing(op))
+        openings.Pop()
+    }
+
+    return total
 }
 
 
 func main() {
     lines := readFile()
-    total := 0
+    var scores []int
+
     for _, line := range lines{
         points := parse(line)
-        total += points
+        if points > 0 {
+            scores = append(scores, points)
+        }
+        // fmt.Println(points, line)
     }
-    fmt.Println(total)
+    sort.Ints(scores)
+    fmt.Println(scores[(len(scores)-1)/2])
+
 }
