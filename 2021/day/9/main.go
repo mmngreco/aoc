@@ -94,11 +94,11 @@ import (
 const visited = 9
 
 var (
-    //    0 1 2
-    //
-    // 0  1 2 3
-    // 1  1 # 3
-    // 2  1 2 3
+	//    0 1 2
+	//
+	// 0  1 2 3
+	// 1  1 # 3
+	// 2  1 2 3
 	origin = [2]int{0, 0}
 	up     = [2]int{-1, 0}
 	down   = [2]int{1, 0}
@@ -128,7 +128,7 @@ func basinFinder(data [][]int, row_i int, col_i int, motion [2]int) (out int) {
 	data[row_i][col_i] = visited
 
 	out = 1
-    out += basinFinder(data, row_i, col_i, up)
+	out += basinFinder(data, row_i, col_i, up)
 	out += basinFinder(data, row_i, col_i, down)
 	out += basinFinder(data, row_i, col_i, left)
 	out += basinFinder(data, row_i, col_i, right)
@@ -142,7 +142,6 @@ func printMatrix(data [][]int) {
 	}
 }
 
-
 func make_matrix(nrows int, ncols int) [][]int {
 	matrix := make([][]int, nrows)
 	for i := range matrix {
@@ -150,7 +149,6 @@ func make_matrix(nrows int, ncols int) [][]int {
 	}
 	return matrix
 }
-
 
 func lines2matrix(lines []string) [][]int {
 
@@ -160,7 +158,7 @@ func lines2matrix(lines []string) [][]int {
 	// Create an empty matrix
 	matrix := make_matrix(nrows, ncols)
 
-    // convert to int
+	// convert to int
 	for row_i, row_v := range lines {
 		for col_i, col_v := range row_v {
 			v, _ := strconv.Atoi(string(col_v))
@@ -170,39 +168,42 @@ func lines2matrix(lines []string) [][]int {
 	return matrix
 }
 
-
 func quicksort_rev(arr []int) (out []int) {
-    n := len(arr)
+	n := len(arr)
 
-    if n < 2 {
-        // early stop
-        return arr
-    }
+	if n < 2 {
+		// early stop
+		return arr
+	}
 
-    idx := rand.Intn(n)
-    pivot := arr[idx]
+	idx := rand.Intn(n)
+	pivot := arr[idx]
 
-    var (
-        left []int
-        right []int
-        equal []int
-    )
+	var (
+		left  []int
+		right []int
+		equal []int
+	)
 
+	for _, v := range arr {
+		if v < pivot {
+			left = append(left, v)
+		}
+		if v > pivot {
+			right = append(right, v)
+		}
+		if v == pivot {
+			equal = append(equal, v)
+		}
+	}
 
-    for _, v := range arr {
-        if v < pivot { left = append(left, v) }
-        if v > pivot { right = append(right, v) }
-        if v == pivot { equal = append(equal, v) }
-    }
+	out = append(out, quicksort_rev(right)...)
+	out = append(out, equal...)
+	out = append(out, quicksort_rev(left)...)
 
-    out = append(out, quicksort_rev(right)...)
-    out = append(out, equal...)
-    out = append(out, quicksort_rev(left)...)
-
-    return out
+	return out
 
 }
-
 
 func readFile() (matrix [][]int) {
 	// read file and return a Matrix
@@ -210,29 +211,28 @@ func readFile() (matrix [][]int) {
 	b, _ := ioutil.ReadFile(filename)
 	str := strings.Trim(string(b), "\n")
 	lines := strings.Split(str, "\n")
-    matrix = lines2matrix(lines)
-    return matrix
+	matrix = lines2matrix(lines)
+	return matrix
 }
 
-
 func main() {
-    matrix := readFile()
+	matrix := readFile()
 
-    var basinList []int
+	var basinList []int
 
 	// find low points
 	for row_i, row_v := range matrix {
 		for col_i := range row_v {
-            counter := basinFinder(matrix, row_i, col_i, origin)
-            if counter > 0 {
-                basinList = append(basinList, counter)
-            }
+			counter := basinFinder(matrix, row_i, col_i, origin)
+			if counter > 0 {
+				basinList = append(basinList, counter)
+			}
 		}
 	}
 
-    // solution
-    sorted := quicksort_rev(basinList)
-    fmt.Println("3-largest basin:", sorted[0:3])
-    fmt.Println("Solution:", sorted[0] * sorted[1] * sorted[2])
+	// solution
+	sorted := quicksort_rev(basinList)
+	fmt.Println("3-largest basin:", sorted[0:3])
+	fmt.Println("Solution:", sorted[0]*sorted[1]*sorted[2])
 
 }
