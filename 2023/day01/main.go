@@ -3,12 +3,12 @@ package main
 import (
 	"fmt"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 )
 
-// readFile and return lines
-func readFile() (lines []string) {
+func readInputFile() (lines []string) {
 	fname := os.Args[1]
 	b, _ := os.ReadFile(fname)
 	txt := strings.Trim(string(b), "\n")
@@ -27,10 +27,6 @@ func filterNumber(lines []string) (out []int) {
 			}
 		}
 
-		// if len(digits) == 1 {
-		// 	number, _ := strconv.Atoi(string(digits[0]))
-		// 	out = append(out, number)
-		// } else if len(digits) > 1 {
 		number, _ := strconv.Atoi(string(digits[0]) + string(digits[len(digits)-1]))
 		out = append(out, number)
 	}
@@ -45,11 +41,67 @@ func sum(numbers []int) (sum int) {
 	return sum
 }
 
-func main() {
-	lines := readFile()
+func part1() {
+	lines := readInputFile()
 	// fmt.Println(lines)
 	numbers := filterNumber(lines)
 	// fmt.Println(numbers)
 	total := sum(numbers)
 	fmt.Println(total)
+}
+
+var textNumbers = map[string]int{
+	"one":   1,
+	"two":   2,
+	"three": 3,
+	"four":  4,
+	"five":  5,
+	"six":   6,
+	"seven": 7,
+	"eight": 8,
+	"nine":  9,
+	"zero":  0,
+}
+
+func to_number(word string) int {
+	if val, ok := textNumbers[word]; ok {
+		return val
+	} else {
+		number, err := strconv.Atoi(word)
+		if err != nil {
+			fmt.Println("Error:", err)
+			fmt.Println("word:", word)
+		}
+		return number
+	}
+}
+
+func LineToNumber(line string) int {
+	var numberString string
+	re := regexp.MustCompile(`(?:one|two|three|four|five|six|seven|eight|nine|zero|\d)`)
+	matches := re.FindAllString(line, -1)
+	numberString += strconv.Itoa(to_number(matches[0]))
+	numberString += strconv.Itoa(to_number(matches[len(matches)-1]))
+	number, _ := strconv.Atoi(numberString)
+	return number
+}
+
+func convertStringsToNumber(lines []string) []int {
+	out := make([]int, len(lines))
+	for i, line := range lines {
+		out[i] = LineToNumber(line)
+		// fmt.Println(i, out[i], line)
+	}
+	return out
+}
+
+func part2() {
+	lines := readInputFile()
+	numbers := convertStringsToNumber(lines)
+	fmt.Println(sum(numbers))
+}
+
+func main() {
+	// part1()
+	part2()
 }
