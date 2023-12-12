@@ -80,8 +80,10 @@ func LineToNumber(line string) int {
 	var numberString string
 	re := regexp.MustCompile(`(?:one|two|three|four|five|six|seven|eight|nine|zero|\d)`)
 	matches := re.FindAllString(line, -1)
+	// build 2-digit number string
 	numberString += strconv.Itoa(to_number(matches[0]))
 	numberString += strconv.Itoa(to_number(matches[len(matches)-1]))
+	// convert string to int
 	number, _ := strconv.Atoi(numberString)
 	return number
 }
